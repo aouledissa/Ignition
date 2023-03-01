@@ -4,8 +4,10 @@
     "description": "",
     "main": "src/server.ts",
     "scripts": {
+        "clean": "rm -rf build && rm -rf node_modules",
         "build": "rm -rf build/ && tsc",
-        "start": "node build/server.js"
+        "start": "node build/server.js",
+        "start:dev": "nodemon"
     },
     "keywords": [],
     "author": "AouledIssa",
