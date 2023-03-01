@@ -1,9 +1,10 @@
 import express from 'express';
-import http from 'http';
+import 'reflect-metadata';
 import { config } from './config/config';
-import Logger from './library/Logger';
+import createGraphQLServer from './library/graphql/GraphqlServer';
+import Logger from './library/logging/Logger';
 
-const startServer = () => {
+const startServer = async () => {
     const app = express();
 
     app.use((req, res, next) => {
@@ -21,26 +22,24 @@ const startServer = () => {
     app.use(express.json());
 
     /** Health check */
-    app.get('/status', (req, res, next) => res.status(200).json({ message: 'Up and running :D' }));
+    app.get('/status', (_, res) => res.status(200).json({ message: 'Up and running :D' }));
+
+    const graphQLServer = await createGraphQLServer(app);
+    graphQLServer.httpServer.listen(config.server.port, () => {
+        const os = require('os');
+        const graphQLEndpoint = `http://${os.hostname}:${config.server.port}/graphql`;
+        Logger.info(`runtime at http://${os.hostname}:${config.server.port}`);
+        Logger.info(`graphQL runtime at ${graphQLEndpoint}`);
+    });
 
     /** Error handling */
-    app.use((req, res, next) => {
-        const error = Error('not found');
+    app.use((req, res, _) => {
+        const error = Error(`${req.url} path was not found`);
+        Logger.error(error.message);
         Logger.error(error);
 
         return res.status(404).json({ message: error.message });
     });
-
-    http.createServer(app).listen(config.server.port, () => {
-        Logger.info(`Server is running on port ${config.server.port}`);
-    });
-
-    // const graphQLServer = await requireGraphQLServer(app);
-    // graphQLServer.httpServer.listen(port, () => {
-    //     const graphQLEndpoint = `http://${hostname}:${port}/graphql`;
-    //     console.log(`runtime at http://${hostname}:${port}`);
-    //     console.log(`graphQL runtime at ${graphQLEndpoint}`);
-    // });
 };
 
 startServer();

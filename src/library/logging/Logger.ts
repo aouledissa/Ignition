@@ -1,4 +1,4 @@
-import chalk, { Chalk } from 'chalk';
+import chalk from 'chalk';
 
 export default class Logger {
     public static log = (args: any) => this.info(args);
