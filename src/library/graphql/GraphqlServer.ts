@@ -5,10 +5,11 @@ import autoCollectResolvers from './schema.utils';
 import { buildSchema } from 'type-graphql';
 import { resolve } from 'path';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
-import { diContainer } from '../../di/di.config';
 import bodyParser from 'body-parser';
 import { expressMiddleware } from '@apollo/server/express4';
 import Logger from '../logging/Logger';
+import autoResolverWithContainer from '../ioc';
+import { container } from 'tsyringe';
 
 export interface GqlServerConfig {
     httpServer: http.Server;
@@ -17,9 +18,10 @@ export interface GqlServerConfig {
 
 export default async function createGraphQLServer(app: Express) {
     const httpServer = http.createServer(app);
-    const resolvers = autoCollectResolvers(`./${process.env.ROOT_DIR}/graphql`, 'resolver', ['ts', 'js']);
+    const resolvers = autoCollectResolvers(`${process.cwd()}/**/graphql`, 'resolver', ['ts', 'js']);
 
-    Logger.info(`path to Schema: ${resolve(`${process.cwd()}/schema.gql`)}`);
+    Logger.warn(`path to Schema: ${resolve(`${process.cwd()}/schema.gql`)}`);
+    Logger.warn(`path to resolvers: ${resolve(`${resolvers}`)}`);
 
     const apolloServer = new ApolloServer({
         schema: await buildSchema({
@@ -28,7 +30,7 @@ export default async function createGraphQLServer(app: Express) {
                 path: resolve(`${process.cwd()}/schema.gql`),
                 sortedSchema: false
             },
-            container: diContainer
+            container: autoResolverWithContainer(container)
         }),
         plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
     });

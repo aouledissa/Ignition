@@ -2,7 +2,7 @@ import express from 'express';
 import 'reflect-metadata';
 import { config } from './config/config';
 import createGraphQLServer from './library/graphql/GraphqlServer';
-import Logger from './library/logging/Logger';
+import Logger, { log } from './library/logging/Logger';
 
 const startServer = async () => {
     const app = express();
@@ -26,10 +26,10 @@ const startServer = async () => {
 
     const graphQLServer = await createGraphQLServer(app);
     graphQLServer.httpServer.listen(config.server.port, () => {
-        const os = require('os');
-        const graphQLEndpoint = `http://${os.hostname}:${config.server.port}/graphql`;
-        Logger.info(`runtime at http://${os.hostname}:${config.server.port}`);
-        Logger.info(`graphQL runtime at ${graphQLEndpoint}`);
+        const graphQLEndpoint = `http://${config.server.hostname}:${config.server.port}/graphql`;
+
+        log(`runtime at http://${config.server.hostname}:${config.server.port}`);
+        log(`graphQL runtime at ${graphQLEndpoint}`);
     });
 
     /** Error handling */

@@ -1,13 +1,12 @@
 import dotenv from 'dotenv';
+import { requireVariable } from '../library/env';
 
 dotenv.config();
-
-const SERVER_PORT = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 1337;
-const SERVER_HOSTNAME = process.env.SERVER_HOSTNAME || '';
+const os = require('os');
 
 export const config = {
     server: {
-        port: SERVER_PORT,
-        hostname: SERVER_HOSTNAME
+        port: requireVariable(process.env.SERVER_PORT, Number, true),
+        hostname: os.hostname()
     }
 };
